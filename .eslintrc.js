@@ -20,7 +20,12 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    'prettier/prettier': ['error', { endOfLine: 'lf' }],
+    '@typescript-eslint/no-explicit-any': 'off', // Tắt lỗi sử dụng any
+    '@typescript-eslint/no-unsafe-assignment': 'off', // Tắt lỗi gán giá trị any không an toàn
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+    ], // Chỉ cảnh báo nếu biến không dùng, bỏ qua biến bắt đầu bằng "_"
+    'prettier/prettier': ['error', { endOfLine: 'auto' }], // Fix lỗi endOfLine
   },
 };

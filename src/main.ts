@@ -2,11 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { Reflector } from '@nestjs/core';
+import { TransformInterceptor } from './core/transform.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
@@ -14,10 +16,19 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views')); //view
   app.setViewEngine('ejs');
 
-  // guard: kiểu như middleware global
-  // const reflector = app.get(Reflector);
-  // app.useGlobalGuards(new JwtAuthGuard(reflector));
-  // app.useGlobalInterceptors(new TransformInterceptor(reflector));
+  // guard: kiểu như middleware global và nó sẽ bắt hết những api nào chưa có token
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  app.useGlobalInterceptors(new TransformInterceptor(reflector));
+
+  // có cái pipes này thì mới hiển thị lỗi của classvalidator được, nếu không sẽ hiển thị lỗi mặc định của nestjs
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Bỏ qua các field không có trong DTO
+      forbidNonWhitelisted: true, // Trả lỗi nếu có field không hợp lệ
+      transform: true, // Tự động chuyển đổi kiểu dữ liệu
+    }),
+  );
 
   app.setGlobalPrefix('api');
   app.enableVersioning({
