@@ -2,11 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import * as ms from 'ms';
 import { RegisterUserDto } from 'src/users/dto/create-user.dto';
 import { IUser } from 'src/users/users.interface';
 import { UsersService } from 'src/users/users.service';
-
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import ms = require('ms');
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,43 +17,38 @@ export class AuthService {
   ) {}
 
   async login(user: IUser, response: Response) {
-    const { _id, email, name } = user;
-    console.log('🚀 ~ AuthService ~ login ~ user:', user);
+    const { _id, email, name, role } = user;
+
+    const { password, refreshToken, ...dataUserOther } = user; // lưu vào JWT thông tin trừ password và refreshToken
+
     const payload = {
       sub: 'Token Login',
       iss: 'From Server',
-      _id,
-      name,
-      email,
-      // role,
+      ...dataUserOther,
     };
 
     const refresh_token = this.createRefreshToken(payload);
+    console.log('🚀 ~ AuthService ~ login ~ refresh_token:', refresh_token);
 
     // // update user with refresh token
     await this.usersService.updateUserToken(refresh_token, _id);
 
-    // //...
+    const JWT_REFRESH_EXPIRE =
+      this.configService.get<string>('JWT_REFRESH_EXPIRE');
 
-    // console.log(
-    //   "this.configService.get<string>('JWT_REFRESH_EXPIRE')",
-    //   this.configService.get<string>('JWT_REFRESH_EXPIRE'),
-    // );
-
-    // response.cookie('refresh_token', refresh_token, {
-    //   httpOnly: true,
-    //   maxAge: ms(this.configService.get<string>('JWT_REFRESH_EXPIRE')), //ms là chuyển sang miligiay
-    // });
-    // console.log('á', ms('2d'));
+    response.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      maxAge: ms(JWT_REFRESH_EXPIRE), //ms là chuyển sang miligiay
+    });
 
     return {
       access_token: this.jwtService.sign(payload),
-      // refresh_token,
+      refresh_token,
       users: {
         _id,
         name,
         email,
-        // role,
+        role,
         // permissions,
       },
     };
@@ -97,19 +92,76 @@ export class AuthService {
     return null;
   }
 
-  // create(createAuthDto: CreateAuthDto) {
-  //   return 'This action adds a new auth';
-  // }
-  // findAll() {
-  //   return `This action returns all auth`;
-  // }
-  // findOne(id: number) {
-  //   return `This action returns a #${id} auth`;
-  // }
-  // update(id: number, updateAuthDto: UpdateAuthDto) {
-  //   return `This action updates a #${id} auth`;
-  // }
-  // remove(id: number) {
-  //   return `This action removes a #${id} auth`;
-  // }
+  processNewToken = async (refreshToken: string, response: Response) => {
+    try {
+      const user = await this.usersService.findUserByToken(refreshToken);
+
+      if (user) {
+        const { _id, email, name, role } = user;
+        // const plainUser = JSON.parse(JSON.stringify(user));
+
+        const { password, refreshToken, ...dataUserOther } = user;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const payload = {
+          sub: 'refresh token',
+          iss: 'From Server',
+          ...dataUserOther,
+        };
+
+        const refresh_token = this.createRefreshToken(payload);
+
+        //  xóa cookie trước
+
+        response.clearCookie('refresh_token');
+
+        // update user with refresh token
+        await this.usersService.updateUserToken(refresh_token, _id.toString());
+
+        // const userRole = user.role as unknown as { _id: string; name: string };
+        // const temp = await this.roleService.findOne(userRole._id);
+
+        //...
+        response.cookie('refresh_token', refresh_token, {
+          httpOnly: true,
+          maxAge: ms(this.configService.get<string>('JWT_REFRESH_EXPIRE')),
+        });
+
+        return {
+          access_token: this.jwtService.sign(payload),
+          refresh_token,
+          users: {
+            _id,
+            name,
+            email,
+            role,
+            // permissions: temp?.permissions ?? [],
+          },
+        };
+      } else {
+        throw new BadRequestException(
+          'Refresh Token không hợp lệ vui lòng login',
+        );
+      }
+    } catch (error) {
+      throw new BadRequestException(
+        'Refresh Token không hợp lệ vui lòng login',
+      );
+    }
+  };
+
+  logOut = async (refreshToken: string, response: Response) => {
+    const user = await this.usersService.findUserByToken(refreshToken);
+    console.log('🚀 ~ AuthService ~ logOut= ~ user:', user);
+    if (user) {
+      response.clearCookie('refresh_token');
+
+      await this.usersService.updateUserToken('', user._id.toString());
+      return 'Logged Out';
+    } else {
+      throw new BadRequestException(
+        'Refresh Token không hợp lệ vui lòng login',
+      );
+    }
+  };
 }

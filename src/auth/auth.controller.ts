@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Res,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -16,7 +17,7 @@ import { RegisterUserDto } from 'src/users/dto/create-user.dto';
 import { Public, ResponseMessage } from 'src/decorator/customize';
 import { LocalAuthGuard } from './local-auth-guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { Response } from 'express';
+import { Request as RequestExpress, Response } from 'express';
 
 @ApiTags('auth') // dành cho swagger
 @Controller('auth')
@@ -43,28 +44,32 @@ export class AuthController {
     return this.authService.register(registerUser);
   }
 
-  // @Post()
-  // create(@Body() createAuthDto: CreateAuthDto) {
-  //   return this.authService.create(createAuthDto);
-  // }
+  @Post('/logout')
+  @ResponseMessage('Logout User')
+  handleLogout(
+    @Req() request: RequestExpress,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies['refresh_token'] as string; // lấy refresh token từ cookie
 
-  // @Get()
-  // findAll() {
-  //   return this.authService.findAll();
-  // }
+    return this.authService.logOut(refreshToken, response);
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.authService.findOne(+id);
-  // }
+  @Get('/account')
+  @ResponseMessage('Get user information')
+  handleGetAccount(@Request() req) {
+    const { user } = req;
+    return { user };
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-  //   return this.authService.update(+id, updateAuthDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.authService.remove(+id);
-  // }
+  @Public()
+  @Get('/refresh')
+  @ResponseMessage('Get user by refresh token')
+  handleRefreshToken(
+    @Req() request: RequestExpress,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies['refresh_token'] as string;
+    return this.authService.processNewToken(refreshToken, response);
+  }
 }

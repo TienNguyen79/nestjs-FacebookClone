@@ -5,7 +5,7 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop()
+  @Prop({ required: true })
   name: string;
 
   @Prop({ required: true }) // biểu hiện cho thuộc tính
@@ -37,6 +37,12 @@ export class User {
 
   @Prop()
   refresh_token: string;
+
+  @Prop()
+  role: string;
+
+  @Prop()
+  refreshToken: string;
 
   @Prop({ type: Object })
   createdBy: { _id: mongoose.Schema.Types.ObjectId; email: string };
