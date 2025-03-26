@@ -28,7 +28,6 @@ export class AuthService {
     };
 
     const refresh_token = this.createRefreshToken(payload);
-    console.log('🚀 ~ AuthService ~ login ~ refresh_token:', refresh_token);
 
     // // update user with refresh token
     await this.usersService.updateUserToken(refresh_token, _id);
@@ -152,7 +151,6 @@ export class AuthService {
 
   logOut = async (refreshToken: string, response: Response) => {
     const user = await this.usersService.findUserByToken(refreshToken);
-    console.log('🚀 ~ AuthService ~ logOut= ~ user:', user);
     if (user) {
       response.clearCookie('refresh_token');
 

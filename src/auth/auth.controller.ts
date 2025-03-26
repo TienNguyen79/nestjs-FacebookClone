@@ -44,6 +44,7 @@ export class AuthController {
     return this.authService.register(registerUser);
   }
 
+  @Public()
   @Post('/logout')
   @ResponseMessage('Logout User')
   handleLogout(

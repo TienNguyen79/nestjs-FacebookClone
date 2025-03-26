@@ -8,8 +8,9 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, ResetPasswordDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Public, ResponseMessage } from 'src/decorator/customize';
 
 @Controller('users')
 export class UsersController {
@@ -18,6 +19,16 @@ export class UsersController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Public()
+  @ResponseMessage('Reset Password')
+  @Patch('/resetPassword')
+  resetPassword(
+    @Body()
+    body: ResetPasswordDto,
+  ) {
+    return this.usersService.resetPassword(body);
   }
 
   @Get()

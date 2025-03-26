@@ -9,6 +9,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
+import { PasswordResetsModule } from './password_resets/password_resets.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { RolesModule } from './roles/roles.module';
     UsersModule,
     AuthModule,
     RolesModule,
+    MailModule,
+    PasswordResetsModule,
   ] as const, // Ép kiểu tránh lỗi
   controllers: [AppController],
   providers: [AppService],
