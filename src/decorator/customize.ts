@@ -1,5 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { ROLE_TYPES } from 'utils/common';
 
 // không muốn check quyền dùng file này
 export const IS_PUBLIC_KEY = 'isPublic';
@@ -20,3 +21,6 @@ export const User = createParamDecorator(
 export const IS_PUBLIC_PERMISSION = 'isPublicPermission';
 export const SkipCheckPermission = () =>
   SetMetadata(IS_PUBLIC_PERMISSION, true);
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);

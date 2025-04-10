@@ -28,7 +28,7 @@ export class UsersService {
     return hash;
   };
 
-  async create(createUserDto: CreateUserDto) {
+  async create<T>(createUserDto: CreateUserDto | T) {
     const user = await this.userModel.create({
       ...createUserDto,
     });

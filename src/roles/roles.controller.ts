@@ -11,7 +11,7 @@ import {
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { ResponseMessage, User } from 'src/decorator/customize';
+import { ResponseMessage, Roles, User } from 'src/decorator/customize';
 import { IUser } from 'src/users/users.interface';
 
 @Controller('roles')
@@ -26,6 +26,7 @@ export class RolesController {
 
   @Get()
   @ResponseMessage('Get all Role')
+  @Roles('admin', 'user')
   findAll(@Query() queryParams: Tpaginate<{ name?: string }>) {
     return this.rolesService.findAll(queryParams);
   }

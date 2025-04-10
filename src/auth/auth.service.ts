@@ -5,8 +5,10 @@ import { Response } from 'express';
 import { RegisterUserDto } from 'src/users/dto/create-user.dto';
 import { IUser } from 'src/users/users.interface';
 import { UsersService } from 'src/users/users.service';
+import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import ms = require('ms');
+import { ROLE_TYPES } from 'utils/common';
 @Injectable()
 export class AuthService {
   constructor(
@@ -162,4 +164,40 @@ export class AuthService {
       );
     }
   };
+
+  async callBackOAuthLogin(userGoogle?: any, res?: Response): Promise<any> {
+    const { email, name, picture } = userGoogle;
+
+    const payload = {
+      sub: 'Token Login',
+      iss: 'From Server',
+      email,
+      name,
+      avatar: picture,
+    };
+
+    let user = await this.usersService.findOnebyUsername(email);
+    if (!user) {
+      await this.usersService.create({
+        email: email,
+        name: name,
+        avatar: picture,
+        password: uuidv4(), // tạo password ngẫu nhiên vì đăng nhập bằng google không bao giờ có password
+        role: ROLE_TYPES.USER,
+      }); // tùy schema
+    }
+    const refresh_token = this.createRefreshToken(payload);
+
+    const JWT_REFRESH_EXPIRE =
+      this.configService.get<string>('JWT_REFRESH_EXPIRE');
+
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      maxAge: ms(JWT_REFRESH_EXPIRE), //ms là chuyển sang miligiay
+    });
+
+    const jwt = this.jwtService.sign(payload);
+
+    return res.redirect(`http://localhost:3000/oauth-success?token=${jwt}`);
+  }
 }

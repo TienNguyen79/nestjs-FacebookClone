@@ -9,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
 import { TransformInterceptor } from './core/transform.interceptor';
+import { RolesGuard } from './roles/role.guard';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
@@ -18,7 +19,7 @@ async function bootstrap() {
 
   // guard: kiểu như middleware global và nó sẽ bắt hết những api nào chưa có token
   const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  app.useGlobalGuards(new JwtAuthGuard(reflector), new RolesGuard(reflector));
   app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
   // có cái pipes này thì mới hiển thị lỗi của classvalidator được, nếu không sẽ hiển thị lỗi mặc định của nestjs

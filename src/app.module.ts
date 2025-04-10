@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { PasswordResetsModule } from './password_resets/password_resets.module';
 import { MailModule } from './mail/mail.module';
+import { GoogleStrategy } from './auth/passport/google.strategy';
 
 @Module({
   imports: [
@@ -44,6 +45,6 @@ import { MailModule } from './mail/mail.module';
     PasswordResetsModule,
   ] as const, // Ép kiểu tránh lỗi
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, GoogleStrategy],
 })
 export class AppModule {}

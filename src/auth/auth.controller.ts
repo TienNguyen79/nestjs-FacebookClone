@@ -18,11 +18,16 @@ import { Public, ResponseMessage } from 'src/decorator/customize';
 import { LocalAuthGuard } from './local-auth-guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Request as RequestExpress, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('auth') // dành cho swagger
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+  ) {}
 
   @Public() // khi tất cả bắt buộc phải có jwt mới call api được nhưng cho cái PUBLIC vào thì không cần
   @UseGuards(LocalAuthGuard)
@@ -72,5 +77,19 @@ export class AuthController {
   ) {
     const refreshToken = request.cookies['refresh_token'] as string;
     return this.authService.processNewToken(refreshToken, response);
+  }
+
+  @Public()
+  @Get('/google/login')
+  @ResponseMessage('Login with Google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {}
+
+  @Public()
+  @Get('/google/callback')
+  @ResponseMessage('Google callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    await this.authService.callBackOAuthLogin(req.user, res);
   }
 }
