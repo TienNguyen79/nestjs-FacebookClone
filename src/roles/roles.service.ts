@@ -61,7 +61,6 @@ export class RolesService {
       .exec();
 
     // Tổng số bản ghi (để client tính tổng số trang)
-    console.log('🚀 ~ RolesService ~ findAll ~ filter:', filter);
     const total = await this.roleModel.countDocuments(filter).exec();
 
     return {

@@ -13,6 +13,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ResponseMessage, Roles, User } from 'src/decorator/customize';
 import { IUser } from 'src/users/users.interface';
+import { ParseObjectIdPipe } from 'src/core/parse-object-id.pipe';
 
 @Controller('roles')
 export class RolesController {
@@ -26,14 +27,14 @@ export class RolesController {
 
   @Get()
   @ResponseMessage('Get all Role')
-  @Roles('admin', 'user')
+  // @Roles('admin', 'user') chỉ những role nào được phép truy cập
   findAll(@Query() queryParams: Tpaginate<{ name?: string }>) {
     return this.rolesService.findAll(queryParams);
   }
 
   @Get(':id')
   @ResponseMessage('Get a Role')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.rolesService.findOne(id);
   }
 

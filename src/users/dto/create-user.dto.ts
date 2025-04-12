@@ -1,7 +1,9 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -28,15 +30,29 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Gender không được để trống' })
   gender: string;
 
-  avatar: string;
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 
-  phoneNumber: number;
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
 
-  bio: string;
+  @IsOptional()
+  @IsString()
+  bio?: string;
 
-  age: number;
+  @IsOptional()
+  @IsNumber()
+  age?: number;
 
-  address: string;
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: string;
 }
 
 export class RegisterUserDto {
@@ -90,4 +106,24 @@ export class ResetPasswordDto {
   @IsEmail({}, { message: 'Email không đúng định dạng' })
   @IsNotEmpty({ message: 'Email không được để trống' })
   email: string;
+}
+
+export class ChangePasswordDto {
+  @IsNotEmpty({ message: 'currentPassword không được để trống' })
+  @IsString()
+  @MinLength(6, { message: 'currentPassword phải có ít nhất 6 ký tự' })
+  @MaxLength(30, { message: 'currentPassword không được quá 30 ký tự' })
+  currentPassword: string;
+
+  @IsNotEmpty({ message: 'newPassword không được để trống' })
+  @IsString()
+  @MinLength(6, { message: 'newPassword phải có ít nhất 6 ký tự' })
+  @MaxLength(30, { message: 'newPassword không được quá 30 ký tự' })
+  newPassword: string;
+
+  @IsNotEmpty({ message: 'confirmNewPassword không được để trống' })
+  @IsString()
+  @MinLength(6, { message: 'confirmNewPassword phải có ít nhất 6 ký tự' })
+  @MaxLength(30, { message: 'confirmNewPassword không được quá 30 ký tự' })
+  confirmNewPassword: string;
 }
